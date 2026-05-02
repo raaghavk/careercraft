@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { razorpay, PLANS } from '@/lib/razorpay'
+import { getRazorpayClient, PLANS } from '@/lib/razorpay'
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,6 +8,15 @@ export async function POST(req: NextRequest) {
 
     if (!plan) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
+    }
+
+    const razorpay = getRazorpayClient()
+
+    if (!razorpay) {
+      return NextResponse.json(
+        { error: 'Payments are temporarily unavailable' },
+        { status: 503 }
+      )
     }
 
     const order = await razorpay.orders.create({
